@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // or "mysql" or "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?  // only for credential login
+  role          String   @default("user")
+
+  leads         Lead[]
+  quotes        Quote[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  status      String   @default("New")
+  source      String?
+  assignedTo  User?    @relation(fields: [assignedToId], references: [id])
+  assignedToId String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+
+  quotes      Quote[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Quote {
+  id          String   @id @default(cuid())
+  subject     String
+  description String?
+  amount      Float
+  status      String   @default("Draft")
+
+  customer    Customer @relation(fields: [customerId], references: [id])
+  customerId  String
+
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdById String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
